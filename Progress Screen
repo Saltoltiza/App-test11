@@ -1,0 +1,116 @@
+// src/screens/ProgressScreen.js
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LineChart, PieChart } from 'react-native-chart-kit';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { Calendar } from 'react-native-calendars';
+
+const ProgressScreen = () => {
+  const [habits, setHabits] = useState([]);
+  const [selectedHabit, setSelectedHabit] = useState(null);
+  const [timeRange, setTimeRange] = useState('week');
+  const [calendarMarkedDates, setCalendarMarkedDates] = useState({});
+
+  useEffect(() => {
+    loadHabits();
+  }, []);
+
+  useEffect(() => {
+    if (habits.length > 0 && !selectedHabit) {
+      setSelectedHabit(habits[0]);
+    }
+  }, [habits]);
+
+  useEffect(() => {
+    updateCalendarMarkedDates();
+  }, [habits]);
+
+  const loadHabits = async () => {
+    try {
+      const storedHabits = await AsyncStorage.getItem('habits');
+      if (storedHabits) {
+        setHabits(JSON.parse(storedHabits));
+      }
+    } catch (error) {
+      console.error('Error loading habits:', error);
+    }
+  };
+
+  const updateCalendarMarkedDates = () => {
+    const markedDates = {};
+    habits.forEach(habit => {
+      habit.completedDates?.forEach(date => {
+        if (!markedDates[date]) {
+          markedDates[date] = { dots: [] };
+        }
+        markedDates[date].dots.push({ color: getCategoryColor(habit.category) });
+      });
+    });
+
+    // Add today's date with a marker
+    const today = new Date().toISOString().split('T')[0];
+    markedDates[today] = {
+      ...markedDates[today],
+      selected: true,
+      selectedColor: '#4A90E2',
+    };
+
+    setCalendarMarkedDates(markedDates);
+  };
+
+  const getCategoryColor = (category) => {
+    const colors = {
+      'Health': '#4CAF50',
+      'Productivity': '#2196F3',
+      'Learning': '#FF9800',
+      'Social': '#E91E63',
+      'Finance': '#9C27B0',
+      'Mindfulness': '#00BCD4',
+    };
+    return colors[category] || '#9E9E9E';
+  };
+
+  const getHabitCompletionData = () => {
+    if (!selectedHabit) return [];
+
+    const data = [];
+    const today = new Date();
+    
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const dateString = date.toISOString().split('T')[0];
+      
+      const isCompleted = selectedHabit.completedDates?.includes(dateString);
+      data.push(isCompleted ? 1 : 0);
+    }
+
+    return data;
+  };
+
+  const getCategoryDistribution = () => {
+    const distribution = {};
+    habits.forEach(habit => {
+      const category = habit.category;
+      distribution[category] = (distribution[category] || 0) + 1;
+    });
+
+    return Object.entries(distribution).map(([category, count]) => ({
+      name: category,
+      count,
+      color: getCategoryColor(category),
+      legendFontColor: '#333',
+      legendFontSize: 12,
+    }));
+  };
+
+  const calculateConsistencyRate = () => {
+    if (!selectedHabit
