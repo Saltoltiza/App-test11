@@ -1,4 +1,3 @@
-// src/screens/HabitsScreen.js
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -27,7 +26,7 @@ const HabitsScreen = () => {
   });
 
   const categories = ['Health', 'Productivity', 'Learning', 'Social', 'Finance', 'Mindfulness'];
-  const frequencies = ['Daily', 'Weekly', 'Monthly', 'Specific Days'];
+  const frequencies = ['Daily', 'Weekly', 'Monthly'];
 
   useEffect(() => {
     loadHabits();
@@ -70,7 +69,7 @@ const HabitsScreen = () => {
     setFormData({
       name: habit.name,
       description: habit.description || '',
-      frequency: habit.frequency,
+      frequency: habit.frequency || 'Daily',
       reminderTime: habit.reminderTime || '',
       category: habit.category || 'Health',
     });
@@ -86,14 +85,12 @@ const HabitsScreen = () => {
     const updatedHabits = [...habits];
     
     if (editingHabit) {
-      // Update existing habit
       const index = updatedHabits.findIndex(h => h.id === editingHabit.id);
       updatedHabits[index] = {
         ...editingHabit,
         ...formData,
       };
     } else {
-      // Add new habit
       const newHabit = {
         id: Date.now().toString(),
         ...formData,
@@ -202,7 +199,7 @@ const HabitsScreen = () => {
           <Icon name="checkmark-circle-outline" size={80} color="#CCCCCC" />
           <Text style={styles.emptyStateTitle}>No Habits Yet</Text>
           <Text style={styles.emptyStateText}>
-            Start building your personal improvement journey by adding your first habit
+            Start building your personal improvement journey
           </Text>
           <TouchableOpacity style={styles.emptyStateButton} onPress={handleAddHabit}>
             <Text style={styles.emptyStateButtonText}>Create First Habit</Text>
@@ -518,9 +515,6 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 12,
     fontWeight: 'bold',
-  },
-  categoryOptionTextSelected: {
-    textDecorationLine: 'underline',
   },
   frequencyContainer: {
     flexDirection: 'row',
