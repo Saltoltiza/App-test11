@@ -1,4 +1,3 @@
-// src/screens/ProgressScreen.js
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -9,15 +8,13 @@ import {
   Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LineChart, PieChart } from 'react-native-chart-kit';
+import { LineChart } from 'react-native-chart-kit';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Calendar } from 'react-native-calendars';
 
 const ProgressScreen = () => {
   const [habits, setHabits] = useState([]);
   const [selectedHabit, setSelectedHabit] = useState(null);
   const [timeRange, setTimeRange] = useState('week');
-  const [calendarMarkedDates, setCalendarMarkedDates] = useState({});
 
   useEffect(() => {
     loadHabits();
@@ -27,10 +24,6 @@ const ProgressScreen = () => {
     if (habits.length > 0 && !selectedHabit) {
       setSelectedHabit(habits[0]);
     }
-  }, [habits]);
-
-  useEffect(() => {
-    updateCalendarMarkedDates();
   }, [habits]);
 
   const loadHabits = async () => {
@@ -44,42 +37,8 @@ const ProgressScreen = () => {
     }
   };
 
-  const updateCalendarMarkedDates = () => {
-    const markedDates = {};
-    habits.forEach(habit => {
-      habit.completedDates?.forEach(date => {
-        if (!markedDates[date]) {
-          markedDates[date] = { dots: [] };
-        }
-        markedDates[date].dots.push({ color: getCategoryColor(habit.category) });
-      });
-    });
-
-    // Add today's date with a marker
-    const today = new Date().toISOString().split('T')[0];
-    markedDates[today] = {
-      ...markedDates[today],
-      selected: true,
-      selectedColor: '#4A90E2',
-    };
-
-    setCalendarMarkedDates(markedDates);
-  };
-
-  const getCategoryColor = (category) => {
-    const colors = {
-      'Health': '#4CAF50',
-      'Productivity': '#2196F3',
-      'Learning': '#FF9800',
-      'Social': '#E91E63',
-      'Finance': '#9C27B0',
-      'Mindfulness': '#00BCD4',
-    };
-    return colors[category] || '#9E9E9E';
-  };
-
   const getHabitCompletionData = () => {
-    if (!selectedHabit) return [];
+    if (!selectedHabit) return [0, 0, 0, 0, 0, 0, 0];
 
     const data = [];
     const today = new Date();
@@ -99,17 +58,11 @@ const ProgressScreen = () => {
   const getCategoryDistribution = () => {
     const distribution = {};
     habits.forEach(habit => {
-      const category = habit.category;
+      const category = habit.category || 'Other';
       distribution[category] = (distribution[category] || 0) + 1;
     });
 
-    return Object.entries(distribution).map(([category, count]) => ({
-      name: category,
-      count,
-      color: getCategoryColor(category),
-      legendFontColor: '#333',
-      legendFontSize: 12,
-    }));
+    return Object.entries(distribution);
   };
 
   const calculateConsistencyRate = () => {
@@ -201,7 +154,7 @@ const ProgressScreen = () => {
                 </View>
                 <View style={styles.statCard}>
                   <Text style={styles.statNumber}>
-                    {new Date(selectedHabit.createdDate).toLocaleDateString()}
+                    {selectedHabit.createdDate ? new Date(selectedHabit.createdDate).toLocaleDateString() : 'N/A'}
                   </Text>
                   <Text style={styles.statLabel}>Started On</Text>
                 </View>
@@ -211,13 +164,13 @@ const ProgressScreen = () => {
                 <Text style={styles.chartTitle}>Weekly Completion Trend</Text>
                 <LineChart
                   data={{
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
                     datasets: [{
                       data: getHabitCompletionData(),
                     }],
                   }}
                   width={Dimensions.get('window').width - 40}
-                  height={220}
+                  height={200}
                   chartConfig={{
                     backgroundColor: '#FFF',
                     backgroundGradientFrom: '#FFF',
@@ -242,49 +195,17 @@ const ProgressScreen = () => {
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Category Distribution</Text>
-            {getCategoryDistribution().length > 0 && (
-              <PieChart
-                data={getCategoryDistribution()}
-                width={Dimensions.get('window').width - 40}
-                height={200}
-                chartConfig={{
-                  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                }}
-                accessor="count"
-                backgroundColor="transparent"
-                paddingLeft="15"
-                absolute
-              />
-            )}
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Activity Calendar</Text>
-            <Calendar
-              markedDates={calendarMarkedDates}
-              markingType={'multi-dot'}
-              theme={{
-                backgroundColor: '#FFF',
-                calendarBackground: '#FFF',
-                textSectionTitleColor: '#333',
-                selectedDayBackgroundColor: '#4A90E2',
-                selectedDayTextColor: '#FFF',
-                todayTextColor: '#4A90E2',
-                dayTextColor: '#333',
-                textDisabledColor: '#CCC',
-                dotColor: '#4A90E2',
-                selectedDotColor: '#FFF',
-                arrowColor: '#4A90E2',
-                monthTextColor: '#333',
-                textDayFontWeight: '300',
-                textMonthFontWeight: 'bold',
-                textDayHeaderFontWeight: '500',
-                textDayFontSize: 16,
-                textMonthFontSize: 16,
-                textDayHeaderFontSize: 14,
-              }}
-              style={styles.calendar}
-            />
+            <View style={styles.categoryDistribution}>
+              {getCategoryDistribution().map(([category, count]) => (
+                <View key={category} style={styles.categoryItem}>
+                  <View style={styles.categoryRow}>
+                    <View style={[styles.categoryColor, { backgroundColor: getCategoryColor(category) }]} />
+                    <Text style={styles.categoryName}>{category}</Text>
+                  </View>
+                  <Text style={styles.categoryCount}>{count} habit{count !== 1 ? 's' : ''}</Text>
+                </View>
+              ))}
+            </View>
           </View>
 
           <View style={styles.section}>
@@ -302,8 +223,22 @@ const ProgressScreen = () => {
                     </View>
                   );
                 }
+                if (habit.streak >= 30) {
+                  return (
+                    <View key={habit.id} style={styles.achievementCard}>
+                      <Icon name="trophy" size={24} color="#FFD700" />
+                      <View style={styles.achievementInfo}>
+                        <Text style={styles.achievementTitle}>30-Day Master!</Text>
+                        <Text style={styles.achievementText}>{habit.name}</Text>
+                      </View>
+                    </View>
+                  );
+                }
                 return null;
               })}
+              {habits.filter(h => h.streak >= 7).length === 0 && (
+                <Text style={styles.noAchievements}>Keep going! Achievements will appear here.</Text>
+              )}
             </View>
           </View>
         </>
@@ -318,6 +253,19 @@ const ProgressScreen = () => {
       )}
     </ScrollView>
   );
+};
+
+const getCategoryColor = (category) => {
+  const colors = {
+    'Health': '#4CAF50',
+    'Productivity': '#2196F3',
+    'Learning': '#FF9800',
+    'Social': '#E91E63',
+    'Finance': '#9C27B0',
+    'Mindfulness': '#00BCD4',
+    'Other': '#9E9E9E',
+  };
+  return colors[category] || '#9E9E9E';
 };
 
 const styles = StyleSheet.create({
@@ -450,9 +398,34 @@ const styles = StyleSheet.create({
   chart: {
     borderRadius: 15,
   },
-  calendar: {
-    borderRadius: 15,
-    overflow: 'hidden',
+  categoryDistribution: {
+    marginTop: 10,
+  },
+  categoryItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  categoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  categoryColor: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 10,
+  },
+  categoryName: {
+    fontSize: 16,
+    color: '#333',
+  },
+  categoryCount: {
+    fontSize: 14,
+    color: '#666',
   },
   achievementsContainer: {
     marginTop: 10,
@@ -477,6 +450,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginTop: 2,
+  },
+  noAchievements: {
+    textAlign: 'center',
+    color: '#999',
+    fontStyle: 'italic',
+    padding: 20,
   },
   emptyState: {
     flex: 1,
