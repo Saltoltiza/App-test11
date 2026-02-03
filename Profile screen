@@ -306,4 +306,189 @@ const ProfileScreen = ({ navigation }) => {
         <Text style={styles.sectionTitle}>Motivational Quote</Text>
         <View style={styles.quoteCard}>
           <Icon name="quote" size={24} color="#4A90E2" style={styles.quoteIcon} />
-          <Text
+          <Text style={styles.quoteText}>
+            "Success is not final, failure is not fatal: it is the courage to continue that counts."
+          </Text>
+          <Text style={styles.quoteAuthor}>- Winston Churchill</Text>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Habit Tracker v1.0.0</Text>
+        <Text style={styles.footerText}>Keep building better habits!</Text>
+      </View>
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
+  header: {
+    backgroundColor: '#4A90E2',
+    padding: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  profileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 20,
+  },
+  avatarText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#4A90E2',
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFF',
+    marginBottom: 5,
+  },
+  userEmail: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginBottom: 5,
+  },
+  memberSince: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  statsSection: {
+    backgroundColor: '#FFF',
+    margin: 20,
+    marginTop: -30,
+    borderRadius: 15,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 15,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  statCard: {
+    width: '48%',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#4A90E2',
+    marginBottom: 5,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+  },
+  section: {
+    backgroundColor: '#FFF',
+    marginHorizontal: 20,
+    marginBottom: 20,
+    borderRadius: 15,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  settingItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  settingInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  settingTitle: {
+    fontSize: 16,
+    color: '#333',
+    marginLeft: 15,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  menuItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  menuItemText: {
+    fontSize: 16,
+    color: '#333',
+    marginLeft: 15,
+  },
+  quoteCard: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  quoteIcon: {
+    marginBottom: 10,
+  },
+  quoteText: {
+    fontSize: 16,
+    fontStyle: 'italic',
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 10,
+    lineHeight: 24,
+  },
+  quoteAuthor: {
+    fontSize: 14,
+    color: '#666',
+    fontStyle: 'italic',
+    alignSelf: 'flex-end',
+  },
+  footer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    paddingBottom: 40,
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#999',
+    marginBottom: 5,
+  },
+});
+
+export default ProfileScreen;
