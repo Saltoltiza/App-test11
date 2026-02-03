@@ -1,4 +1,3 @@
-// src/screens/ProfileScreen.js
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -6,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   Switch,
   Alert,
 } from 'react-native';
@@ -15,8 +13,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 const ProfileScreen = ({ navigation }) => {
   const [user, setUser] = useState({
-    name: 'User',
-    email: 'user@example.com',
+    name: 'John Doe',
+    email: 'john@example.com',
     joinedDate: new Date().toISOString(),
   });
   const [stats, setStats] = useState({
@@ -110,10 +108,9 @@ const ProfileScreen = ({ navigation }) => {
         exportDate: new Date().toISOString(),
       };
       
-      // In a real app, you would implement actual export functionality
       Alert.alert(
         'Export Data',
-        'Your data has been prepared for export. This feature would save or share your data in a real app.',
+        'Your data has been prepared for export. In a real app, this would save or share your data.',
         [{ text: 'OK' }]
       );
       
@@ -136,10 +133,7 @@ const ProfileScreen = ({ navigation }) => {
             try {
               await AsyncStorage.clear();
               Alert.alert('Success', 'All data has been reset');
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Home' }],
-              });
+              loadStats();
             } catch (error) {
               Alert.alert('Error', 'Failed to reset data');
             }
