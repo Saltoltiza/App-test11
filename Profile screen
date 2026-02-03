@@ -1,0 +1,309 @@
+// src/screens/ProfileScreen.js
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  Switch,
+  Alert,
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Icon from 'react-native-vector-icons/Ionicons';
+
+const ProfileScreen = ({ navigation }) => {
+  const [user, setUser] = useState({
+    name: 'User',
+    email: 'user@example.com',
+    joinedDate: new Date().toISOString(),
+  });
+  const [stats, setStats] = useState({
+    totalHabits: 0,
+    completedToday: 0,
+    currentStreak: 0,
+    bestStreak: 0,
+  });
+  const [settings, setSettings] = useState({
+    darkMode: false,
+    notifications: true,
+    weeklyReports: true,
+    autoBackup: true,
+  });
+
+  useEffect(() => {
+    loadUserData();
+    loadStats();
+    loadSettings();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      const userData = await AsyncStorage.getItem('user');
+      if (userData) {
+        setUser(JSON.parse(userData));
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const habits = await AsyncStorage.getItem('habits');
+      if (habits) {
+        const parsedHabits = JSON.parse(habits);
+        const today = new Date().toISOString().split('T')[0];
+        
+        const newStats = {
+          totalHabits: parsedHabits.length,
+          completedToday: parsedHabits.filter(h => 
+            h.completedDates?.includes(today)
+          ).length,
+          currentStreak: Math.max(...parsedHabits.map(h => h.streak || 0)),
+          bestStreak: Math.max(...parsedHabits.map(h => h.streak || 0)),
+        };
+        setStats(newStats);
+      }
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  };
+
+  const loadSettings = async () => {
+    try {
+      const savedSettings = await AsyncStorage.getItem('appSettings');
+      if (savedSettings) {
+        setSettings(JSON.parse(savedSettings));
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    }
+  };
+
+  const saveSettings = async (newSettings) => {
+    try {
+      await AsyncStorage.setItem('appSettings', JSON.stringify(newSettings));
+      setSettings(newSettings);
+    } catch (error) {
+      console.error('Error saving settings:', error);
+    }
+  };
+
+  const handleSettingToggle = (setting) => {
+    const newSettings = {
+      ...settings,
+      [setting]: !settings[setting],
+    };
+    saveSettings(newSettings);
+  };
+
+  const handleExportData = async () => {
+    try {
+      const habits = await AsyncStorage.getItem('habits');
+      const userData = await AsyncStorage.getItem('user');
+      
+      const exportData = {
+        habits: JSON.parse(habits || '[]'),
+        user: JSON.parse(userData || '{}'),
+        exportDate: new Date().toISOString(),
+      };
+      
+      // In a real app, you would implement actual export functionality
+      Alert.alert(
+        'Export Data',
+        'Your data has been prepared for export. This feature would save or share your data in a real app.',
+        [{ text: 'OK' }]
+      );
+      
+      console.log('Export Data:', JSON.stringify(exportData, null, 2));
+    } catch (error) {
+      Alert.alert('Error', 'Failed to export data');
+    }
+  };
+
+  const handleResetData = () => {
+    Alert.alert(
+      'Reset All Data',
+      'Are you sure you want to reset all your data? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await AsyncStorage.clear();
+              Alert.alert('Success', 'All data has been reset');
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Home' }],
+              });
+            } catch (error) {
+              Alert.alert('Error', 'Failed to reset data');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const menuItems = [
+    {
+      title: 'Edit Profile',
+      icon: 'person-outline',
+      onPress: () => Alert.alert('Edit Profile', 'Profile editing would be implemented here'),
+    },
+    {
+      title: 'Achievements',
+      icon: 'trophy-outline',
+      onPress: () => navigation.navigate('Progress'),
+    },
+    {
+      title: 'Export Data',
+      icon: 'download-outline',
+      onPress: handleExportData,
+    },
+    {
+      title: 'Help & Support',
+      icon: 'help-circle-outline',
+      onPress: () => Alert.alert('Help', 'Support features would be implemented here'),
+    },
+    {
+      title: 'About',
+      icon: 'information-circle-outline',
+      onPress: () => Alert.alert(
+        'About Habit Tracker',
+        'Version 1.0.0\n\nA personal development app for building better habits and tracking progress.'
+      ),
+    },
+    {
+      title: 'Reset All Data',
+      icon: 'trash-outline',
+      color: '#FF6B6B',
+      onPress: handleResetData,
+    },
+  ];
+
+  return (
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.profileHeader}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {user.name.charAt(0).toUpperCase()}
+            </Text>
+          </View>
+          <View style={styles.profileInfo}>
+            <Text style={styles.userName}>{user.name}</Text>
+            <Text style={styles.userEmail}>{user.email}</Text>
+            <Text style={styles.memberSince}>
+              Member since {new Date(user.joinedDate).toLocaleDateString()}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.statsSection}>
+        <Text style={styles.sectionTitle}>Your Stats</Text>
+        <View style={styles.statsGrid}>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{stats.totalHabits}</Text>
+            <Text style={styles.statLabel}>Total Habits</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{stats.completedToday}</Text>
+            <Text style={styles.statLabel}>Today</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{stats.currentStreak}</Text>
+            <Text style={styles.statLabel}>Current Streak</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{stats.bestStreak}</Text>
+            <Text style={styles.statLabel}>Best Streak</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>App Settings</Text>
+        
+        <View style={styles.settingItem}>
+          <View style={styles.settingInfo}>
+            <Icon name="moon-outline" size={24} color="#4A90E2" />
+            <Text style={styles.settingTitle}>Dark Mode</Text>
+          </View>
+          <Switch
+            value={settings.darkMode}
+            onValueChange={() => handleSettingToggle('darkMode')}
+            trackColor={{ false: '#767577', true: '#4A90E2' }}
+          />
+        </View>
+
+        <View style={styles.settingItem}>
+          <View style={styles.settingInfo}>
+            <Icon name="notifications-outline" size={24} color="#4A90E2" />
+            <Text style={styles.settingTitle}>Notifications</Text>
+          </View>
+          <Switch
+            value={settings.notifications}
+            onValueChange={() => handleSettingToggle('notifications')}
+            trackColor={{ false: '#767577', true: '#4A90E2' }}
+          />
+        </View>
+
+        <View style={styles.settingItem}>
+          <View style={styles.settingInfo}>
+            <Icon name="stats-chart-outline" size={24} color="#4A90E2" />
+            <Text style={styles.settingTitle}>Weekly Reports</Text>
+          </View>
+          <Switch
+            value={settings.weeklyReports}
+            onValueChange={() => handleSettingToggle('weeklyReports')}
+            trackColor={{ false: '#767577', true: '#4A90E2' }}
+          />
+        </View>
+
+        <View style={styles.settingItem}>
+          <View style={styles.settingInfo}>
+            <Icon name="cloud-upload-outline" size={24} color="#4A90E2" />
+            <Text style={styles.settingTitle}>Auto Backup</Text>
+          </View>
+          <Switch
+            value={settings.autoBackup}
+            onValueChange={() => handleSettingToggle('autoBackup')}
+            trackColor={{ false: '#767577', true: '#4A90E2' }}
+          />
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Menu</Text>
+        {menuItems.map((item, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.menuItem}
+            onPress={item.onPress}
+          >
+            <View style={styles.menuItemLeft}>
+              <Icon 
+                name={item.icon} 
+                size={24} 
+                color={item.color || '#4A90E2'} 
+              />
+              <Text style={[styles.menuItemText, item.color && { color: item.color }]}>
+                {item.title}
+              </Text>
+            </View>
+            <Icon name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Motivational Quote</Text>
+        <View style={styles.quoteCard}>
+          <Icon name="quote" size={24} color="#4A90E2" style={styles.quoteIcon} />
+          <Text
