@@ -1,0 +1,70 @@
+// src/utils/storage.js
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+export const saveHabit = async (habit) => {
+  try {
+    const habits = await getHabits();
+    const existingIndex = habits.findIndex(h => h.id === habit.id);
+    
+    if (existingIndex >= 0) {
+      habits[existingIndex] = habit;
+    } else {
+      habits.push(habit);
+    }
+    
+    await AsyncStorage.setItem('habits', JSON.stringify(habits));
+    return true;
+  } catch (error) {
+    console.error('Error saving habit:', error);
+    return false;
+  }
+};
+
+export const getHabits = async () => {
+  try {
+    const habits = await AsyncStorage.getItem('habits');
+    return habits ? JSON.parse(habits) : [];
+  } catch (error) {
+    console.error('Error getting habits:', error);
+    return [];
+  }
+};
+
+export const deleteHabit = async (habitId) => {
+  try {
+    const habits = await getHabits();
+    const filteredHabits = habits.filter(habit => habit.id !== habitId);
+    await AsyncStorage.setItem('habits', JSON.stringify(filteredHabits));
+    return true;
+  } catch (error) {
+    console.error('Error deleting habit:', error);
+    return false;
+  }
+};
+
+export const markHabitComplete = async (habitId, date) => {
+  try {
+    const habits = await getHabits();
+    const updatedHabits = habits.map(habit => {
+      if (habit.id === habitId) {
+        const completedDates = habit.completedDates || [];
+        const dateString = date.toISOString().split('T')[0];
+        
+        if (!completedDates.includes(dateString)) {
+          return {
+            ...habit,
+            completedDates: [...completedDates, dateString],
+            streak: (habit.streak || 0) + 1,
+          };
+        }
+      }
+      return habit;
+    });
+    
+    await AsyncStorage.setItem('habits', JSON.stringify(updatedHabits));
+    return true;
+  } catch (error) {
+    console.error('Error marking habit complete:', error);
+    return false;
+  }
+};
