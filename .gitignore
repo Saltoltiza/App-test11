@@ -1,0 +1,24 @@
+﻿# Dependencies - DO NOT UPLOAD
+node_modules/
+
+# Expo cache - DO NOT UPLOAD
+.expo/
+
+# Package lock - Can be regenerated
+package-lock.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
